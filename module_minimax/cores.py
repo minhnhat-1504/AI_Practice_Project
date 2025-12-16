@@ -36,7 +36,7 @@ class AlphaBetaSolver:
         # Duyệt qua từng nước đi ứng viên
         for i, move in enumerate(moves):
             # 1. Tạo bàn cờ giả lập
-            sim_board = copy.deepcopy(board)
+            sim_board = copy.deepcopy(board) # Sử dụng deepcopy() mà không phải copy() để tránh lỗi tham chiếu các đối tượng con 
             sim_board.make_move(move[0], move[1], self.ai_val)
             
             self.clear_screen()
@@ -55,7 +55,7 @@ class AlphaBetaSolver:
             val = self.min_value(sim_board, self.depth - 1, alpha, beta)
             
             print(f"   => Điểm đánh giá cho nước {move} là: {val}")
-            time.sleep(10) 
+            time.sleep(5) 
 
             if val > best_val:
                 best_val = val
@@ -64,6 +64,9 @@ class AlphaBetaSolver:
             alpha = max(alpha, best_val)
             
         return best_move
+
+    # alpha: Điểm số tốt nhất mà AI (Max) chắc chắn đạt được.
+    # beta: Điểm số thấp nhất mà Đối thủ (Min) chắc chắn ép AI phải chịu
 
     def max_value(self, board, depth, alpha, beta):
         """

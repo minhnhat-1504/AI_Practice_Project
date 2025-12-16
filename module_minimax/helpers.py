@@ -17,6 +17,11 @@ class CaroBoard:
         return False
 
     def get_possible_moves(self):
+        '''
+        Trả về danh sách các nước đi hợp lệ (ô trống kế cận ô đã đánh).
+        Returns:
+            list of tuple: Danh sách các nước đi dưới dạng (hàng, cột).
+        '''
         if np.all(self.board == 0): return [(self.n // 2, self.n // 2)]
         rows, cols = np.where(self.board != 0)
         moves = set()
@@ -31,6 +36,11 @@ class CaroBoard:
         return sorted(list(moves), key=lambda m: abs(m[0]-center) + abs(m[1]-center))
 
     def check_winner(self):
+        '''
+        Kiểm tra người thắng cuộc.
+        Returns:
+            int: 1 nếu X thắng, -1 nếu O thắng, 0 nếu chưa có người thắng.
+        '''
         lines = self._get_all_lines()
         for line in lines:
             if len(line) < self.win_len: continue
@@ -41,7 +51,13 @@ class CaroBoard:
         return 0
 
     def evaluate(self, ai_player):
-        # Heuristic: E = X - O
+        '''
+        Hàm đánh giá bàn cờ cho AI.
+        Args:
+            ai_player (int): Giá trị của AI (1 hoặc -1).
+        Returns:
+            int: Điểm số đánh giá.
+        '''
         user = -ai_player
         ai_score, user_score = 0, 0
         lines = self._get_all_lines()
@@ -54,6 +70,9 @@ class CaroBoard:
         return ai_score - user_score
 
     def _get_all_lines(self):
+        '''
+        Lấy tất cả các hàng, cột, và đường chéo trên bàn cờ.
+        '''
         lines = []
         for i in range(self.n):
             lines.append(self.board[i, :])
@@ -84,7 +103,7 @@ class GameController:
     Nhập liệu, vòng lặp game, và hiển thị.
     """
     def __init__(self):
-        self.n = 10
+        self.n = 10 
         self.depth = 3
         self.user_role = 'X'
         self.user_val = 1

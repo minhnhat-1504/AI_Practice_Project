@@ -13,9 +13,9 @@ Dự án được tổ chức theo mô hình **Core - Helper - Main** (OOP) đ�
       * **Class `CaroBoard`**: Quản lý trạng thái bàn cờ, luật chơi (thắng/thua/hòa) và tính toán hàm lượng giá (Heuristic).
       * **Class `GameController`**: Quản lý giao diện dòng lệnh, nhập liệu từ người dùng, và điều phối lượt đi giữa Người và AI.
   * **`cores.py`**:
-      * **Class `AlphaBetaSolver`**: "Bộ não" của AI. Chứa thuật toán Minimax và logic cắt tỉa Alpha-Beta.
+      * **Class `AlphaBetaSolver`**: Chứa thuật toán Minimax và logic cắt tỉa Alpha-Beta.
 
-## 2\. Tính năng nổi bật
+## 2\. Tính năng
 
 1.  **Tùy chỉnh linh hoạt**:
       * Kích thước bàn cờ $N \times N$ (Mặc định 10x10).
