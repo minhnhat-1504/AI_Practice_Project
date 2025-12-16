@@ -1,83 +1,60 @@
-# Module Graph Coloring: Tô Màu Đồ Thị
+## Module 2: Tô màu Đồ thị (Graph Coloring)
 
-Dự án triển khai giải thuật cho bài toán **Tô màu đồ thị** - một bài toán thuộc nhóm bài toán thỏa mãn ràng buộc - CSP.
+Module này giải quyết bài toán tô màu các đỉnh của đồ thị sao cho không có hai đỉnh kề nhau nào cùng màu, sử dụng số lượng màu ít nhất có thể.
 
-Chương trình được viết dưới dạng **Jupyter Notebook**, sử dụng chiến lược tham lam (Greedy) dựa trên bậc của đỉnh để tối ưu hóa số lượng màu sử dụng, kèm theo mô phỏng đồ họa trực quan.
-
-## 1\. Cấu trúc Dự án
+### 1\. Cấu trúc thư mục & File 
 
 ```
-.
-├── module_coloring/
-│   ├── coloring_demo.ipynb  # File chính chứa mã nguồn và giao diện chạy
-│   ├── input.txt            # File dữ liệu đầu vào (tùy chọn)
-│   └── README.md            # Tài liệu hướng dẫn
+module_coloring/
+├── cores.py       # Chứa thuật toán tô màu chính (Class OptimalColoringSolver)
+├── helpers.py     # Chứa cấu trúc dữ liệu đồ thị, hàm vẽ hình và lưu ảnh
+├── main.py        # File chạy chính (Entry point)
+├── input.txt      # (Tùy chọn) File dữ liệu đồ thị đầu vào
+└── images/        # Thư mục chứa ảnh kết quả (tự động tạo)
 ```
 
-### Chi tiết file `coloring_demo.ipynb`
+### 2\. Thuật toán & Cấu trúc Dữ liệu
 
-Notebook được chia thành 3 Cell chính theo mô hình OOP:
+#### 2.1. Cấu trúc Dữ liệu (Class `GraphMap`)
 
-1.  **Cell 1 - Helper (GraphMap):**
-      * Quản lý cấu trúc dữ liệu đồ thị (Danh sách kề, Danh sách cạnh).
-      * Hỗ trợ sinh đồ thị ngẫu nhiên hoặc đọc từ file ma trận kề.
-2.  **Cell 2 - Core (OptimalColoringSolver):**
-      * Chứa thuật toán tô màu chính.
-      * Sử dụng chiến lược **High-Degree First** (Ưu tiên đỉnh bậc cao) để giảm thiểu số màu.
-3.  **Cell 3 - Main & Visualizer:**
-      * Hàm `visualize_coloring_history`: Vẽ đồ thị minh họa từng bước bằng thư viện `networkx`.
-      * Hàm `run_coloring_interactive`: Giao diện dòng lệnh tương tác với người dùng.
+  * **Danh sách kề (Adjacency List)**: Sử dụng Dictionary `{node: [neighbors]}` để lưu trữ đồ thị. Giúp truy xuất các đỉnh kề nhanh chóng.
+  * **Danh sách cạnh (Edge List)**: List các tuple `(u, v)` dùng để vẽ đồ thị bằng thư viện `networkx`.
 
-## 2\. Tính năng 
+#### 2.2. Chiến lược giải quyết (Greedy High-Degree First)
 
-  * **Đa dạng chế độ nhập liệu**:
-      * **Random Mode [R]**: Tự động sinh đồ thị ngẫu nhiên (chỉ định số đỉnh $N$ và xác suất nối cạnh).
-      * **File Mode [F]**: Đọc cấu trúc đồ thị từ file văn bản .txt bên ngoài.
-  * **Trực quan hóa (Visualization)**:
-      * Hiển thị quá trình tô màu qua từng bước.
-      * Sử dụng bố cục lưới để dễ dàng quan sát lịch sử thuật toán.
-  * **Tùy chỉnh giao diện**:
-      * Cho phép người dùng tự định nghĩa bảng màu (nhập tên màu tiếng Anh hoặc mã Hex).
-      * Tự động xử lý nếu số lượng màu người dùng nhập không đủ.
+Thuật toán sử dụng phương pháp tham lam (Greedy) kết hợp heuristic bậc của đỉnh (Degree):
 
-## 3\. Thuật toán sử dụng
+1.  **Tính bậc (Degree)**: Tính số lượng cạnh nối của mỗi đỉnh.
+2.  **Sắp xếp**: Ưu tiên tô màu các đỉnh có **bậc cao nhất** trước. (Đỉnh bậc cao có nhiều ràng buộc nhất, nên xử lý sớm sẽ giúp giảm thiểu xung đột màu sau này).
+3.  **Tô màu**: Duyệt qua danh sách đã sắp xếp, gán cho mỗi đỉnh màu có chỉ số nhỏ nhất ($0, 1, 2...$) mà chưa bị hàng xóm sử dụng.
 
-Chương trình giải quyết bài toán: *Gán màu cho các đỉnh sao cho không có hai đỉnh kề nhau cùng màu, dùng ít màu nhất có thể.*
+### 3\. Tính năng 
 
-**Chiến lược Greedy High-Degree First:**
+  * **Lưu ảnh tự động**: Kết quả tô màu trực quan sẽ được lưu thành file `coloring_result.png` trong thư mục `images/`.
+  * **Đa dạng đầu vào**: Hỗ trợ sinh đồ thị ngẫu nhiên hoặc đọc từ file `input.txt`.
+  * **Tùy chỉnh màu sắc**: Người dùng có thể tự nhập bảng màu (palette) tùy thích.
 
-1.  **Tính bậc (Degree):** Đếm số lượng cạnh nối của mỗi đỉnh.
-2.  **Sắp xếp:** Xếp các đỉnh theo thứ tự bậc giảm dần (Đỉnh có nhiều kết nối nhất sẽ khó tô nhất $\rightarrow$ Xử lý trước).
-3.  **Gán màu tham lam:**
-      * Duyệt qua danh sách đỉnh đã sắp xếp.
-      * Với mỗi đỉnh, chọn màu có chỉ số nhỏ nhất ($0, 1, 2...$) mà **chưa bị hàng xóm sử dụng**.
+### 4\. Hướng dẫn sử dụng
 
-## 4\. Yêu cầu cài đặt
-
-Bạn cần cài đặt các thư viện Python sau để chạy Notebook:
+#### Bước 1: Cài đặt thư viện
 
 ```bash
-pip install networkx matplotlib
+pip install networkx matplotlib numpy
 ```
 
-## 5\. Hướng dẫn sử dụng
+#### Bước 2: Chạy chương trình
 
-### Bước 1: Khởi động
+Mở terminal tại thư mục `module_coloring` và chạy:
 
-Mở file `coloring_demo.ipynb` bằng Jupyter Notebook hoặc VS Code.
+```bash
+python main.py
+```
 
-### Bước 2: Chạy chương trình
+#### Bước 3: Tương tác
 
-1.  Chạy lần lượt **Cell 1** và **Cell 2** để nạp các lớp `GraphMap` và `OptimalColoringSolver`.
-2.  Chạy **Cell 3**. Chương trình sẽ hiện khung nhập liệu bên dưới.
-
-### Bước 3: Tương tác
-
-  * **Chọn chế độ:** Nhập `R` (Ngẫu nhiên) hoặc `F` (File).
-  * **Cấu hình (Nếu chọn R):** Nhập số đỉnh (VD: 10) và xác suất (VD: 0.4).
-  * **Chọn màu:**
-      * Nhập danh sách màu bạn thích (VD: `red blue green yellow`).
-      * Hoặc nhấn **Enter** để dùng bảng màu mặc định.
+  * Nhập `R` để sinh ngẫu nhiên hoặc `F` để đọc file.
+  * Nhập thông số đồ thị (nếu chọn Random).
+  * Xem kết quả in ra màn hình và kiểm tra file ảnh trong thư mục `images/`.
 
 ### Định dạng file `input.txt` (Dành cho chế độ File)
 
@@ -95,3 +72,17 @@ Nếu bạn muốn tự nhập đồ thị, hãy tạo file `input.txt` cùng th
 1 1 0 1
 0 0 1 0
 ```
+
+## Chạy chương trình demo
+1. **Input**
+
+    ![Coloring input](images/input.png)
+2. **Output**
+
+    ![Coloring output](images/output_terminal_1.png)
+
+    ![Coloring output](images/output_terminal_2.png)
+
+    ![Coloring output](images/output_terminal_3.png)
+
+![AStar Demo](images/coloring_result.png)
