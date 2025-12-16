@@ -132,22 +132,4 @@ Xây dựng AI chơi cờ Caro sử dụng thuật toán Minimax kết hợp Alp
 
 **Thuật toán**: Minimax với Alpha-Beta Pruning và hàm đánh giá dựa trên "cửa sổ chiến thắng".
 
-## Đóng góp
 
-Nếu bạn muốn đóng góp cho dự án:
-1. Fork repository
-2. Tạo branch mới cho feature
-3. Commit changes
-4. Push và tạo Pull Request
-
-## Tác giả
-
-- Dự án thực tập AI - Khoa CNTT, UIT
-
-## Giấy phép
-
-Dự án này được phân phối dưới giấy phép MIT. Xem file LICENSE để biết thêm chi tiết.
-
-## Liên hệ
-
-Nếu có câu hỏi hoặc góp ý, vui lòng tạo issue trên repository hoặc liên hệ qua email.
