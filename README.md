@@ -47,7 +47,7 @@ ai_practice_project/
 
 1. **Clone hoặc tải dự án**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/minhnhat-1504/AI_Practice_Project
    cd ai_practice_project
    ```
 
