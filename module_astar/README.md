@@ -103,7 +103,7 @@ Chương trình sẽ yêu cầu bạn nhập:
     ![AStar input](images/input.png)
 2. **Output**
 
-    ![AStar input](images/output_terminal.png)
+    ![AStar output](images/output_terminal.png)
 
 ![AStar Demo](images/astar_result.png)
 
