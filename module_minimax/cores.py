@@ -1,7 +1,9 @@
+# cores.py
 import math
 import copy
 import time
 import os
+import shutil
 
 class AlphaBetaSolver:
     """
@@ -11,74 +13,88 @@ class AlphaBetaSolver:
         self.depth = depth
         self.ai_val = ai_val
         self.user_val = -ai_val
+        
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Nối vào folder images 
+        self.base_dir = os.path.join(current_dir, "images")
+        
+        self.turn_counter = 0 # Đếm số lượt đi để tạo folder turn_1, turn_2...
+        
+        # Tạo thư mục gốc nếu chưa có
+        if not os.path.exists(self.base_dir):
+            os.makedirs(self.base_dir)
 
     def clear_screen(self):
         os.system('cls' if os.name == 'nt' else 'clear')
 
     def get_best_move(self, board):
-        """
-        Tìm nước đi tối ưu nhất cho AI.
+        '''
+        Tìm nước đi tốt nhất cho AI sử dụng Minimax với cắt tỉa Alpha-Beta.
         Args:
-            board (CaroBoard): Bàn cờ hiện tại.
+            board (CaroBoard): Trạng thái bàn cờ hiện tại
         Returns:
-            tuple: Nước đi tốt nhất dưới dạng (hàng, cột).
-        """
+            (int, int): Tọa độ (row, col) của nước đi tốt nhất
+        '''
         alpha, beta = -math.inf, math.inf
         best_val = -math.inf
         best_move = None
         
-        # Lấy danh sách các nước đi có thể
+        # Lấy tất cả các nước đi có thể thực hiện
         moves = board.get_possible_moves()
         total_moves = len(moves)
         
-        print(f"[AI Start] Depth: {self.depth} | Candidates: {total_moves}")
+        print(f"[AI] Depth: {self.depth} | Candidates: {total_moves}")
+        start_time = time.time()
         
-        # Duyệt qua từng nước đi ứng viên
+        self.turn_counter += 1
+        current_turn_dir = os.path.join(self.base_dir, f"turn_{self.turn_counter}")
+        
+        # Xóa folder cũ nếu tồn tại 
+        if os.path.exists(current_turn_dir):
+            shutil.rmtree(current_turn_dir)
+        os.makedirs(current_turn_dir)
+        
+        step_counter = 0 # Đếm bước trong lượt này
+        print(f"Đang lưu ảnh quá trình vào: {current_turn_dir}")
+        
         for i, move in enumerate(moves):
-            # 1. Tạo bàn cờ giả lập
-            sim_board = copy.deepcopy(board) # Sử dụng deepcopy() mà không phải copy() để tránh lỗi tham chiếu các đối tượng con 
+            print(f"\rDang tinh... {int((i/total_moves)*100)}%", end="")
+            
+            sim_board = copy.deepcopy(board)
             sim_board.make_move(move[0], move[1], self.ai_val)
             
-            self.clear_screen()
-            print("=" * 40)
-            print(f"   AI ĐANG THỬ NƯỚC ĐI: {move} ({i+1}/{total_moves})")
-            print("=" * 40)
+            step_counter += 1
+            img_filename = os.path.join(current_turn_dir, f"step_{step_counter}.png")
+            img_title = f"Turn {self.turn_counter} - Step {step_counter}: AI check {move}"
+            sim_board.save_image(img_filename, img_title)
             
-            # Hiển thị bàn cờ giả lập
-            sim_board.display()
-            
-            print(f"-> Giả sử AI đánh vào {move}.")
-            print("-> Nhấn [ENTER] để AI tính toán tiếp...")
-            input()
-
-            # 2. Gọi đệ quy tìm giá trị Min 
             val = self.min_value(sim_board, self.depth - 1, alpha, beta)
             
-            print(f"   => Điểm đánh giá cho nước {move} là: {val}")
-            time.sleep(5) 
-
             if val > best_val:
                 best_val = val
                 best_move = move
             
             alpha = max(alpha, best_val)
             
+        print(f"\rXong! ({round(time.time() - start_time, 2)}s)      ")
         return best_move
 
-    # alpha: Điểm số tốt nhất mà AI (Max) chắc chắn đạt được.
-    # beta: Điểm số thấp nhất mà Đối thủ (Min) chắc chắn ép AI phải chịu
+
+    # alpha: giá trị tốt nhất mà Max có thể đảm bảo tại thời điểm này
+    # beta: giá trị tốt nhất mà Min có thể đảm bảo tại thời điểm này
 
     def max_value(self, board, depth, alpha, beta):
-        """
-        Lượt AI (MAX).
+        '''
+        Hàm Max trong Minimax với cắt tỉa Alpha-Beta.
         Args:
-            board (CaroBoard): Bàn cờ hiện tại.
-            depth (int): Độ sâu còn lại.
-            alpha (float): Giá trị alpha.
-            beta (float): Giá trị beta.
+            board (CaroBoard): Trạng thái bàn cờ hiện tại
+            depth (int): Độ sâu còn lại
+            alpha (float): Giá trị alpha
+            beta (float): Giá trị beta
         Returns:
-            float: Giá trị đánh giá tối đa.
-        """
+            float: Giá trị Max
+        '''
         winner = board.check_winner()
         if winner == self.ai_val: return 100000
         if winner == self.user_val: return -100000
@@ -98,16 +114,16 @@ class AlphaBetaSolver:
         return v
 
     def min_value(self, board, depth, alpha, beta):
-        """
-        Lượt User (MIN).
+        '''
+        Hàm Min trong Minimax với cắt tỉa Alpha-Beta.
         Args:
-            board (CaroBoard): Bàn cờ hiện tại.
-            depth (int): Độ sâu còn lại.
-            alpha (float): Giá trị alpha.
-            beta (float): Giá trị beta.
+            board (CaroBoard): Trạng thái bàn cờ hiện tại
+            depth (int): Độ sâu còn lại
+            alpha (float): Giá trị alpha
+            beta (float): Giá trị beta
         Returns:
-            float: Giá trị đánh giá tối thiểu.
-        """
+            float: Giá trị Min
+        '''
         winner = board.check_winner()
         if winner == self.ai_val: return 100000
         if winner == self.user_val: return -100000

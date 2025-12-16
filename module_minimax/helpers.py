@@ -1,14 +1,15 @@
 import numpy as np
 import os
 import time
+import matplotlib.pyplot as plt 
 from cores import AlphaBetaSolver
 
 class CaroBoard:
     def __init__(self, n=10):
         self.n = n
-        self.board = np.zeros((n, n), dtype=int) 
+        self.board = np.zeros((n, n), dtype=int)
         self.win_len = 3 if n < 5 else 5
-        self.symbols = {0: '.', 1: 'X', -1: 'O'}
+        self.symbols = {0: '.', 1: 'X', -1: 'O'} # 1: X (Đỏ), -1: O (Xanh)
 
     def make_move(self, r, c, player):
         if 0 <= r < self.n and 0 <= c < self.n and self.board[r][c] == 0:
@@ -17,11 +18,7 @@ class CaroBoard:
         return False
 
     def get_possible_moves(self):
-        '''
-        Trả về danh sách các nước đi hợp lệ (ô trống kế cận ô đã đánh).
-        Returns:
-            list of tuple: Danh sách các nước đi dưới dạng (hàng, cột).
-        '''
+        """Trả về danh sách các nước đi hợp lệ (ô trống kế bên ô đã đánh)"""
         if np.all(self.board == 0): return [(self.n // 2, self.n // 2)]
         rows, cols = np.where(self.board != 0)
         moves = set()
@@ -37,9 +34,9 @@ class CaroBoard:
 
     def check_winner(self):
         '''
-        Kiểm tra người thắng cuộc.
+        Kiểm tra xem có người thắng không.
         Returns:
-            int: 1 nếu X thắng, -1 nếu O thắng, 0 nếu chưa có người thắng.
+            int: 1 nếu X thắng, -1 nếu O thắng, 0 nếu chưa có người thắng
         '''
         lines = self._get_all_lines()
         for line in lines:
@@ -52,11 +49,12 @@ class CaroBoard:
 
     def evaluate(self, ai_player):
         '''
-        Hàm đánh giá bàn cờ cho AI.
+        Hàm đánh giá trạng thái bàn cờ. Trả về điểm số: dương nếu có lợi cho AI, âm nếu có lợi cho người chơi.
+        Cách đánh giá: đếm số chuỗi có thể thắng cho mỗi bên.
         Args:
-            ai_player (int): Giá trị của AI (1 hoặc -1).
+            ai_player (int): Giá trị đại diện cho AI (1 hoặc -1)    
         Returns:
-            int: Điểm số đánh giá.
+            int: Điểm số đánh giá
         '''
         user = -ai_player
         ai_score, user_score = 0, 0
@@ -71,7 +69,9 @@ class CaroBoard:
 
     def _get_all_lines(self):
         '''
-        Lấy tất cả các hàng, cột, và đường chéo trên bàn cờ.
+        Lấy tất cả các hàng, cột, và đường chéo trên bàn cờ dưới dạng các mảng 1D.
+        Returns:
+            list of np.array: Danh sách các dòng trên bàn cờ
         '''
         lines = []
         for i in range(self.n):
@@ -83,6 +83,7 @@ class CaroBoard:
         return lines
 
     def display(self):
+        """Hiển thị dạng text trên terminal"""
         header = "   " + " ".join([f"{i:2}" for i in range(self.n)])
         print(header)
         print("   " + "-" * (len(header)-3))
@@ -97,13 +98,56 @@ class CaroBoard:
             print(row_str)
         print()
 
+    def save_image(self, filename, title=""):
+        """
+        Vẽ trạng thái bàn cờ hiện tại và lưu vào đường dẫn filename.
+        Args:
+            filename (str): Đường dẫn lưu ảnh   
+            title (str): Tiêu đề ảnh
+        """
+        fig, ax = plt.subplots(figsize=(6, 6))
+        
+        # Vẽ lưới
+        ax.set_xlim(0, self.n)
+        ax.set_ylim(0, self.n)
+        ax.set_xticks(np.arange(0, self.n + 1, 1))
+        ax.set_yticks(np.arange(0, self.n + 1, 1))
+        ax.grid(which='both', color='black', linestyle='-', linewidth=1)
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+        
+        # Đảo trục Y để khớp với ma trận (hàng 0 ở trên)
+        ax.invert_yaxis()
+        
+        # Vẽ quân cờ
+        for r in range(self.n):
+            for c in range(self.n):
+                val = self.board[r][c]
+                if val == 1: # X
+                    ax.text(c + 0.5, r + 0.5, 'X', fontsize=20, 
+                            ha='center', va='center', color='red', weight='bold')
+                elif val == -1: # O
+                    ax.text(c + 0.5, r + 0.5, 'O', fontsize=20, 
+                            ha='center', va='center', color='blue', weight='bold')
+        
+        if title:
+            ax.set_title(title)
+            
+        try:
+            plt.tight_layout()
+            plt.savefig(filename)
+        except Exception as e:
+            print(f"Lỗi lưu ảnh: {e}")
+        finally:
+            plt.close(fig) # Giải phóng bộ nhớ
+
 
 class GameController:
-    """
-    Nhập liệu, vòng lặp game, và hiển thị.
-    """
+    '''
+    Lớp điều khiển chính của game Caro.
+    '''
     def __init__(self):
-        self.n = 10 
+        self.n = 10
         self.depth = 3
         self.user_role = 'X'
         self.user_val = 1
@@ -133,48 +177,44 @@ class GameController:
         if self.user_role == 'X':
             self.user_val = 1
             self.ai_val = -1
-            print("-Ban la X (Di truoc).")
+            print("-> Ban la X (Di truoc).")
         else:
             self.user_val = -1
             self.ai_val = 1
-            print("-Ban la O (Di sau).")
+            print("-> Ban la O (Di sau).")
         
         time.sleep(1)
         self.game = CaroBoard(self.n)
         self.ai = AlphaBetaSolver(self.depth, self.ai_val)
 
     def run(self):
-        """Vòng lặp chính của game."""
+        '''
+        Vòng lặp chính của game.
+        Người chơi và AI lần lượt thực hiện nước đi cho đến khi có người thắng hoặc hòa
+        '''
         self.setup()
-        
-        current_turn = 1 # X luôn đi trước
+        current_turn = 1 
         game_over = False
         
         while not game_over:
             self.clear_screen()
-            print(f"--- CARO {self.n}x{self.n}")
+            print(f"--- CARO {self.n}x{self.n} (Depth {self.depth}) ---")
             self.game.display()
             
             is_user = (current_turn == self.user_val)
             
             if is_user:
-                # Lượt User
-                print(f"LUOT CUA BAN ({self.user_role})")
+                print(f">>> LUOT CUA BAN ({self.user_role})")
                 while True:
                     try:
                         s = input("Nhap 'Hang Cot' (vd: 5 5): ")
-                        if s == 'exit': 
-                            exit()
-
+                        if s == 'exit': exit()
                         r, c = map(int, s.split())
-
-                        if self.game.make_move(r, c, self.user_val): 
-                            break
+                        if self.game.make_move(r, c, self.user_val): break
                         print("Loi: O khong hop le.")
                     except: print("Loi cu phap.")
             else:
-                # Lượt AI
-                print(f"AI ({'X' if self.ai_val==1 else 'O'}) dang suy nghi")
+                print(f">>> AI ({'X' if self.ai_val==1 else 'O'}) dang suy nghi...")
                 move = self.ai.get_best_move(self.game)
                 if move:
                     self.game.make_move(move[0], move[1], self.ai_val)
@@ -184,7 +224,7 @@ class GameController:
                     print("AI dau hang!")
                     game_over = True
 
-            # Kiểm tra thắng thua
+            # Kiểm tra kết quả thắng/thua/hòa
             winner = self.game.check_winner()
             if winner != 0:
                 self.clear_screen()
